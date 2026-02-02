@@ -241,9 +241,11 @@ impl ClusterBoundingTexture {
             clipped.put_pixel(px, py, *pixel);
         }
 
-        // Downsample
-        let scaled_width = (clipped.width() as f32 * self.downsample_factor.value()) as u32;
-        let scaled_height = (clipped.height() as f32 * self.downsample_factor.value()) as u32;
+        // Downsample (ensure at least 1×1 to avoid zero-dimension images)
+        let scaled_width =
+            (clipped.width() as f32 * self.downsample_factor.value()).max(1.0) as u32;
+        let scaled_height =
+            (clipped.height() as f32 * self.downsample_factor.value()).max(1.0) as u32;
 
         DynamicImage::ImageRgba8(image::imageops::resize(
             &clipped,
