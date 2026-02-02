@@ -28,7 +28,17 @@ pub enum ExportError {
 
     #[error("Failed to convert image to expected format for cluster: {0}")]
     ImageConversionError(String),
+
+    #[error("Image dimensions {width}x{height} exceed the maximum supported size of {max_size}x{max_size}")]
+    DimensionTooLarge {
+        width: u32,
+        height: u32,
+        max_size: u32,
+    },
 }
+
+/// Maximum dimension (width or height) supported by the WebP format.
+pub const WEBP_MAX_DIMENSION: u32 = 16383;
 
 pub trait AtlasExporter: Sync + Send {
     fn export(
@@ -76,6 +86,14 @@ impl AtlasExporter for WebpAtlasExporter {
         width: u32,
         height: u32,
     ) -> Result<(), ExportError> {
+        if width > WEBP_MAX_DIMENSION || height > WEBP_MAX_DIMENSION {
+            return Err(ExportError::DimensionTooLarge {
+                width,
+                height,
+                max_size: WEBP_MAX_DIMENSION,
+            });
+        }
+
         let output_path = output_path.with_extension(self.get_extension());
 
         let atlas_image = create_atlas_rgba(atlas_data, textures, texture_cache, width, height)?;
