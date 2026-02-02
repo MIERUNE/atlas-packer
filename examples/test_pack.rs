@@ -96,13 +96,15 @@ fn main() {
     // Caches the original textures for exporting to an atlas.
     let texture_cache = TextureCache::new(100_000_000);
     let output_dir = Path::new("./examples/output/");
-    packed.export(
-        WebpAtlasExporter::default(),
-        output_dir,
-        &texture_cache,
-        config.width(),
-        config.height(),
-    );
+    packed
+        .export(
+            WebpAtlasExporter::default(),
+            output_dir,
+            &texture_cache,
+            config.width(),
+            config.height(),
+        )
+        .expect("Failed to export atlas");
     let duration = start.elapsed();
     println!("all atlas export process {:?}", duration);
 

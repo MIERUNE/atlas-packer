@@ -124,13 +124,15 @@ fn main() {
     let texture_cache = TextureCache::new(100_000_000);
     let output_dir = Path::new("./examples/output/");
 
-    packed.export(
-        JpegAtlasExporter::default(),
-        output_dir,
-        &texture_cache,
-        config.width(),
-        config.height(),
-    );
+    packed
+        .export(
+            JpegAtlasExporter::default(),
+            output_dir,
+            &texture_cache,
+            config.width(),
+            config.height(),
+        )
+        .expect("Failed to export atlas");
     let mut count = 0;
     let count_limit = 20;
     polygons.iter().for_each(|polygon| {
