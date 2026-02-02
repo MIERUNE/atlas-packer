@@ -5,7 +5,7 @@ use rayon::prelude::*;
 use rstar::{RTree, RTreeObject, AABB};
 
 use crate::disjoint_set::DisjointSet;
-use crate::export::AtlasExporter;
+use crate::export::{AtlasExporter, ExportError};
 use crate::place::{PlacedTextureGeometry, PlacedUVPolygon, TexturePlacer};
 use crate::texture::cache::TextureCache;
 use crate::texture::{ChildUVPolygon, ClusterBoundingTexture, PolygonMappedTexture};
@@ -209,8 +209,8 @@ impl PackedAtlasProvider {
         texture_cache: &TextureCache,
         width: u32,
         height: u32,
-    ) {
-        self.atlases.par_iter().for_each(|(id, atlas)| {
+    ) -> Result<(), ExportError> {
+        self.atlases.par_iter().try_for_each(|(id, atlas)| {
             let output_path = output_dir.join(id.to_string());
             exporter.export(
                 atlas,
@@ -223,8 +223,8 @@ impl PackedAtlasProvider {
                 texture_cache,
                 width,
                 height,
-            );
-        });
+            )
+        })
     }
 
     pub fn get_texture_info(&self, polygon_id: &PolygonID) -> Option<&PlacedUVPolygon> {

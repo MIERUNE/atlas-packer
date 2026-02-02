@@ -20,13 +20,15 @@ fn main() {
     let packed = packer.pack(GuillotineTexturePlacer::new(config.clone()));
 
     let output_dir = Path::new("examples/output/");
-    packed.export(
-        PngAtlasExporter::default(),
-        output_dir,
-        &texture_cache,
-        config.width(),
-        config.height(),
-    );
+    packed
+        .export(
+            PngAtlasExporter::default(),
+            output_dir,
+            &texture_cache,
+            config.width(),
+            config.height(),
+        )
+        .expect("Failed to export atlas");
 
     let (all_pixels, unused_pixels) = unused_pixels::unused_pixels();
 
