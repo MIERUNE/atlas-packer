@@ -32,8 +32,7 @@ pub fn get_image_size<P: AsRef<Path>>(file_path: P) -> Result<(u32, u32), image:
     let path = file_path.as_ref();
     if let Some(path_str) = path.to_str() {
         if FileReader::is_zip_path(path_str) {
-            let file_reader =
-                FileReader::open(path_str).map_err(image::ImageError::IoError)?;
+            let file_reader = FileReader::open(path_str).map_err(image::ImageError::IoError)?;
             let reader = ImageReader::new(file_reader).with_guessed_format()?;
             return Ok(reader.into_dimensions()?);
         }
@@ -63,4 +62,40 @@ pub fn calc_bbox(pixel_coords: &[(u32, u32)]) -> (u32, u32, u32, u32) {
             (min_x.min(*x), min_y.min(*y), max_x.max(*x), max_y.max(*y))
         },
     )
+}
+
+#[cfg(test)]
+mod tests {
+    use super::get_image_size;
+    use image::{DynamicImage, ImageFormat};
+    use std::fs::File;
+    use std::io::{Cursor, Write};
+    use tempfile::tempdir;
+    use zip::write::FileOptions;
+    use zip::ZipWriter;
+
+    #[test]
+    fn get_image_size_from_zip_png() {
+        let dir = tempdir().expect("failed to create temp dir");
+        let zip_path = dir.path().join("assets.zip");
+        let inner_name = "inner.png";
+
+        let img = DynamicImage::new_rgba8(8, 8);
+        let mut png_bytes = Vec::new();
+        img.write_to(&mut Cursor::new(&mut png_bytes), ImageFormat::Png)
+            .expect("failed to encode png");
+
+        let file = File::create(&zip_path).expect("failed to create zip file");
+        let mut zip = ZipWriter::new(file);
+        let options = FileOptions::<()>::default();
+        zip.start_file(inner_name, options)
+            .expect("failed to start zip entry");
+        zip.write_all(&png_bytes)
+            .expect("failed to write png to zip");
+        zip.finish().expect("failed to finish zip");
+
+        let path_in_zip = format!("{}/{}", zip_path.display(), inner_name);
+        let (width, height) = get_image_size(path_in_zip).expect("failed to read size from zip");
+        assert_eq!((width, height), (8, 8));
+    }
 }
