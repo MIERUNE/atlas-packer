@@ -69,11 +69,40 @@ impl Seek for FileReader {
 
 fn split_zip_path(path: &str) -> Option<(String, String)> {
     for delim in [".zip/", ".zip\\"] {
-        if let Some(idx) = path.rfind(delim) {
+        if let Some(idx) = path.find(delim) {
             let zip_path = format!("{}{}", &path[..idx], ".zip");
             let internal_path = path[idx + delim.len()..].replace('\\', "/");
             return Some((zip_path, internal_path));
         }
     }
     None
+}
+
+#[cfg(test)]
+mod tests {
+    use super::split_zip_path;
+
+    #[test]
+    fn split_zip_path_unix_style() {
+        let path = "/a/b/archive.zip/c.png";
+        let (zip_path, internal) = split_zip_path(path).expect("should split");
+        assert_eq!(zip_path, "/a/b/archive.zip");
+        assert_eq!(internal, "c.png");
+    }
+
+    #[test]
+    fn split_zip_path_windows_style() {
+        let path = r"C:\a\b\archive.zip\c.png";
+        let (zip_path, internal) = split_zip_path(path).expect("should split");
+        assert_eq!(zip_path, r"C:\a\b\archive.zip");
+        assert_eq!(internal, "c.png");
+    }
+
+    #[test]
+    fn split_zip_path_prefers_outer_zip() {
+        let path = "/a/archive.zip/dir/foo.zip/bar.png";
+        let (zip_path, internal) = split_zip_path(path).expect("should split");
+        assert_eq!(zip_path, "/a/archive.zip");
+        assert_eq!(internal, "dir/foo.zip/bar.png");
+    }
 }
