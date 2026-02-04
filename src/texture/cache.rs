@@ -4,6 +4,8 @@ use image::DynamicImage;
 use stretto::Cache;
 use sys_info::mem_info;
 
+use crate::file_reader::FileReader;
+
 use super::utils::get_image_size;
 
 // Cache for storing the only size of the image
@@ -69,7 +71,15 @@ impl TextureCache {
         match self.cache.get(path) {
             Some(image) => image.value().clone(),
             None => {
-                let image = image::open(path).expect("Failed to open image file");
+                let path_str = path
+                    .to_str()
+                    .expect("Failed to convert image path to UTF-8 string");
+                let file_reader = FileReader::open(path_str).expect("Failed to open image file");
+                let image = image::ImageReader::new(file_reader)
+                    .with_guessed_format()
+                    .expect("Failed to guess image format")
+                    .decode()
+                    .expect("Failed to decode image");
                 let cost = image.width() * image.height() * image.color().bytes_per_pixel() as u32;
                 self.cache
                     .insert(path.to_path_buf(), image.clone(), cost as i64);

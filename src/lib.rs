@@ -1,4 +1,5 @@
 mod disjoint_set;
+mod file_reader;
 pub mod export;
 pub mod pack;
 pub mod place;
