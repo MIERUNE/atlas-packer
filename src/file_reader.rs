@@ -71,7 +71,7 @@ fn split_zip_path(path: &str) -> Option<(String, String)> {
     for delim in [".zip/", ".zip\\"] {
         if let Some(idx) = path.rfind(delim) {
             let zip_path = format!("{}{}", &path[..idx], ".zip");
-            let internal_path = path[idx + delim.len()..].to_string();
+            let internal_path = path[idx + delim.len()..].replace('\\', "/");
             return Some((zip_path, internal_path));
         }
     }
