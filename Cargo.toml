@@ -8,7 +8,7 @@ thiserror = "1.0.61"
 hashbrown = { version = "0.14.5", features = ["rayon"] }
 stretto = "0.8.4"
 rayon = "1.10.0"
-sys-info = "0.7.0"
+sys-info = "0.9.1"
 clap = {version = "4.5.9", features = ["derive"] }
 rstar = "0.12.0"
 webp = "0.3.0"
